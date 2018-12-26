@@ -6,9 +6,10 @@ import java.util.concurrent.CountDownLatch;
 
 public class ZkConnector {
     ZooKeeper zookeeper;
-    CountDownLatch connectedSignal = new CountDownLatch(1);
+    CountDownLatch connectedSignal;
 
-    public void connect(String host) throws IOException, InterruptedException {
+    public void connect(String host, int amountOfServers) throws IOException, InterruptedException {
+        connectedSignal = new CountDownLatch(amountOfServers);
         zookeeper = new ZooKeeper(host, 5000,
                 new Watcher() {
                     public void process(WatchedEvent event) {
