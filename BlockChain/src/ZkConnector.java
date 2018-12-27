@@ -10,7 +10,7 @@ public class ZkConnector {
     CountDownLatch _connectedSignal;
     Omega _omega;
 
-    public void connect(String host, int amountOfServers, int id) throws IOException, InterruptedException, KeeperException {
+    public void connect(String host, int amountOfServers, String name) throws IOException, InterruptedException, KeeperException {
         _connectedSignal = new CountDownLatch(amountOfServers);
         _zookeeper = new ZooKeeper(host, 5000,
                 new Watcher() {
@@ -21,10 +21,10 @@ public class ZkConnector {
                     }
                 });
         _connectedSignal.await();
-        _omega = new Omega(_zookeeper, id);
+        _omega = new Omega(_zookeeper, name);
     }
 
-    public int GetLeader() throws KeeperException, InterruptedException {
+    public String GetLeader() throws KeeperException, InterruptedException {
         return _omega.getLeader();
     }
 

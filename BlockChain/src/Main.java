@@ -3,6 +3,8 @@ import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 
+import static java.lang.Thread.sleep;
+
 public class Main {
 
     private static final int AMOUNT_OF_SERVERS = 1;
@@ -10,14 +12,28 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
         System.out.println("Hello World!");
-        CreateAndConnect();
+        CreateAndConnect("EYAL_PC:8089");
     }
 
-    private static void CreateAndConnect() throws IOException, InterruptedException, KeeperException {
+    private static Thread CreateThread(String addr) {
+        return new Thread(() -> {
+            try {
+                CreateAndConnect(addr);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (KeeperException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private static void CreateAndConnect(String addr) throws IOException, InterruptedException, KeeperException {
         ZkConnector zkc = new ZkConnector();
-        zkc.connect("localhost", AMOUNT_OF_SERVERS, 1);
-        int leader = zkc.GetLeader();
-        System.out.println("Our leader: " + leader);
+        zkc.connect("localhost", AMOUNT_OF_SERVERS, addr);
+        String leader = zkc.GetLeader();
+        sleep(600000);
         System.out.println("Finished!");
     }
 }

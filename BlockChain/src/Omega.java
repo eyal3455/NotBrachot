@@ -5,8 +5,8 @@ import java.util.List;
 public class Omega  implements Watcher {
     static ZooKeeper zk = null;
     static String root = "/OMEGA";
-    static int ID;
-    static int elected;
+    static String myName;
+    static String elected;
     Object lock = new Object();
 
     /*public Omega(String zkHost, int id) {
@@ -19,10 +19,10 @@ public class Omega  implements Watcher {
         }
     }*/
 
-    public Omega(ZooKeeper zooKeeper, int id) throws KeeperException, InterruptedException {
+    public Omega(ZooKeeper zooKeeper, String name) throws KeeperException, InterruptedException {
         zk = zooKeeper;
-        ID = id;
-        elected = -1;
+        myName = name;
+        elected = null;
 
         propose();
         electLeader();
@@ -32,7 +32,7 @@ public class Omega  implements Watcher {
         if (zk.exists(root, this) == null) {
             zk.create(root, new byte[] {}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         }
-        zk.create(root + "/", String.valueOf(ID).getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
+        zk.create(root + "/", myName.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     public void electLeader() throws KeeperException, InterruptedException {
@@ -47,14 +47,14 @@ public class Omega  implements Watcher {
                 }
             }
             if (data != null) {
-                elected = Integer.parseInt(new String(data));
+                elected = new String(data);
                 System.out.println("New leader: " + elected);
             }
         }
 
 
     }
-    public int getLeader() {
+    public String getLeader() {
         synchronized (lock) {
             return elected;
         }
