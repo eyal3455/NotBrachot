@@ -5,6 +5,7 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 public class ZkConnector {
@@ -28,6 +29,10 @@ public class ZkConnector {
 
     public String GetLeader() throws KeeperException, InterruptedException {
         return _omega.getLeader();
+    }
+
+    public ArrayList<String> GetMembership() {
+        return _omega.getMembership();
     }
 
     public void close() throws InterruptedException {
