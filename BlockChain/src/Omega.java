@@ -25,6 +25,7 @@ public class Omega  implements Watcher {
         elected = -1;
 
         propose();
+        getLeader();
     }
 
     public void propose() throws KeeperException, InterruptedException {

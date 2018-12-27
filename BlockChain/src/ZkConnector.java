@@ -25,7 +25,6 @@ public class ZkConnector {
     }
 
     public int GetLeader() throws KeeperException, InterruptedException {
-        _omega.electLeader();
         return _omega.getLeader();
     }
 
