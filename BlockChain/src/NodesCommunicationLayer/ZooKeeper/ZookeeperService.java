@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-public class ZkConnector {
+public class ZookeeperService {
     ZooKeeper _zookeeper;
     CountDownLatch _connectedSignal;
     Omega _omega;

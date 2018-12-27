@@ -1,4 +1,4 @@
-import NodesCommunicationLayer.ZooKeeper.ZkConnector;
+import NodesCommunicationLayer.ZooKeeper.ZookeeperService;
 import org.apache.zookeeper.KeeperException;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class Main {
     }
 
     private static void CreateAndConnect(String addr) throws IOException, InterruptedException, KeeperException {
-        ZkConnector zkc = new ZkConnector();
+        ZookeeperService zkc = new ZookeeperService();
         zkc.connect("localhost", AMOUNT_OF_SERVERS, addr);
         String leader = zkc.GetLeader();
         sleep(600000);
