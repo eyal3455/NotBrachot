@@ -1,4 +1,3 @@
-package omega;
 import org.apache.zookeeper.*;
 import java.io.IOException;
 import java.util.Collections;
@@ -9,7 +8,8 @@ public class Omega  implements Watcher {
     static int ID;
     static int elected;
     Object lock = new Object();
-    public Omega(String zkHost, int id) {
+
+    /*public Omega(String zkHost, int id) {
         try {
             zk = new ZooKeeper(zkHost, 3000, this);
             ID = id;
@@ -17,7 +17,16 @@ public class Omega  implements Watcher {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }*/
+
+    public Omega(ZooKeeper zooKeeper, int id) throws KeeperException, InterruptedException {
+        zk = zooKeeper;
+        ID = id;
+        elected = -1;
+
+        propose();
     }
+
     public void propose() throws KeeperException, InterruptedException {
         if (zk.exists(root, true) == null) {
             zk.create(root, new byte[] {}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
