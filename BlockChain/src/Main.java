@@ -1,5 +1,5 @@
+import NodesCommunicationLayer.ZooKeeper.ZkConnector;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
         System.out.println("Hello World!");
-        CreateAndConnect("EYAL_PC:8089");
+        //CreateAndConnect("EYAL_PC:8089");
     }
 
     private static Thread CreateThread(String addr) {

@@ -1,5 +1,7 @@
+package NodesCommunicationLayer.ZooKeeper;
+
 import org.apache.zookeeper.*;
-import java.io.IOException;
+
 import java.util.Collections;
 import java.util.List;
 public class Omega  implements Watcher {
@@ -9,9 +11,9 @@ public class Omega  implements Watcher {
     static String elected;
     Object lock = new Object();
 
-    /*public Omega(String zkHost, int id) {
+    /*public NodesCommunicationLayer.ZooKeeper.Omega(String zkHost, int id) {
         try {
-            zk = new ZooKeeper(zkHost, 3000, this);
+            zk = new NodesCommunicationLayer.ZooKeeper(zkHost, 3000, this);
             ID = id;
             elected = -1;
         } catch (IOException e) {
