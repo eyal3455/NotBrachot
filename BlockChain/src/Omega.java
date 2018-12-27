@@ -25,11 +25,11 @@ public class Omega  implements Watcher {
         elected = -1;
 
         propose();
-        getLeader();
+        electLeader();
     }
 
     public void propose() throws KeeperException, InterruptedException {
-        if (zk.exists(root, true) == null) {
+        if (zk.exists(root, this) == null) {
             zk.create(root, new byte[] {}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         }
         zk.create(root + "/", String.valueOf(ID).getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
@@ -37,17 +37,18 @@ public class Omega  implements Watcher {
     }
     public void electLeader() throws KeeperException, InterruptedException {
         synchronized (lock) {
-            List<String> children = zk.getChildren(root, true);
+            List<String> children = zk.getChildren(root, this);
             Collections.sort(children);
             byte[] data = null;
             for (String leader : children) {
-                data = zk.getData(root + "/" + leader, true , null);
+                data = zk.getData(root + "/" + leader, this , null);
                 if (data != null) {
                     break;
                 }
             }
             if (data != null) {
                 elected = Integer.parseInt(new String(data));
+                System.out.println("New leader: " + elected);
             }
         }
 
