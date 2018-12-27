@@ -13,16 +13,6 @@ public class Omega  implements Watcher {
     static ArrayList<String> membership;
     Object lock = new Object();
 
-    /*public NodesCommunicationLayer.ZooKeeper.Omega(String zkHost, int id) {
-        try {
-            zk = new NodesCommunicationLayer.ZooKeeper(zkHost, 3000, this);
-            ID = id;
-            elected = -1;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     public Omega(ZooKeeper zooKeeper, String name) throws KeeperException, InterruptedException {
         zk = zooKeeper;
         myName = name;
@@ -30,24 +20,25 @@ public class Omega  implements Watcher {
         membership = new ArrayList<String>();
 
         propose();
-        electLeader();
-        updateMembership();
+        //electLeader();
+        //updateMembership();
     }
 
     public void propose() throws KeeperException, InterruptedException {
         if (zk.exists(root, this) == null) {
             zk.create(root, new byte[] {}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         }
+        zk.getChildren(root, this);
         zk.create(root + "/", myName.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     public void electLeader() throws KeeperException, InterruptedException {
         synchronized (lock) {
-            List<String> children = zk.getChildren(root, this);
+            List<String> children = zk.getChildren(root, false);
             Collections.sort(children);
             byte[] data = null;
             for (String leader : children) {
-                data = zk.getData(root + "/" + leader, this , null);
+                data = zk.getData(root + "/" + leader, false , null);
                 if (data != null) {
                     break;
                 }
@@ -73,8 +64,8 @@ public class Omega  implements Watcher {
     }
 
     public void process(WatchedEvent watchedEvent) {
-        final Event.EventType eventType = watchedEvent.getType();
         try {
+            zk.getChildren(root, this);
             electLeader();
             updateMembership();
         } catch (Exception e) {
@@ -85,10 +76,10 @@ public class Omega  implements Watcher {
     private void updateMembership() throws KeeperException, InterruptedException {
         synchronized (lock) {
             membership.clear();
-            List<String> children = zk.getChildren(root, this);
+            List<String> children = zk.getChildren(root, false);
             byte[] data = null;
             for (String leader : children) {
-                data = zk.getData(root + "/" + leader, this, null);
+                data = zk.getData(root + "/" + leader, false, null);
                 if (data != null) {
                     membership.add(new String(data));
                 }

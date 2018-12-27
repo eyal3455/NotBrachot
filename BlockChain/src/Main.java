@@ -12,7 +12,9 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
         System.out.println("Hello World!");
-        //CreateAndConnect("EYAL_PC:8089");
+        CreateThread("second").start();
+        sleep(5000);
+        CreateAndConnect("EYAL_PC:8089");
     }
 
     private static Thread CreateThread(String addr) {
@@ -32,7 +34,6 @@ public class Main {
     private static void CreateAndConnect(String addr) throws IOException, InterruptedException, KeeperException {
         ZookeeperService zkc = new ZookeeperService();
         zkc.connect("localhost", AMOUNT_OF_SERVERS, addr);
-        String leader = zkc.GetLeader();
         sleep(600000);
         System.out.println("Finished!");
     }
