@@ -12,6 +12,7 @@ public class ZookeeperService {
     ZooKeeper _zookeeper;
     CountDownLatch _connectedSignal;
     Omega _omega;
+    DistributedStateMachine _stateMachine;
 
     public void connect(String host, int amountOfServers, String name) throws IOException, InterruptedException, KeeperException {
         _connectedSignal = new CountDownLatch(amountOfServers);
@@ -25,6 +26,15 @@ public class ZookeeperService {
                 });
         _connectedSignal.await();
         _omega = new Omega(_zookeeper, name);
+        _stateMachine = new DistributedStateMachine(_zookeeper, name);
+    }
+
+    public boolean StartTransmitting() {
+        return _stateMachine.ChangeState(StateMachineState.Transmitting);
+    }
+
+    public boolean StopTransmitting() {
+        return _stateMachine.ChangeState(StateMachineState.Idle);
     }
 
     public String GetLeader() throws KeeperException, InterruptedException {
