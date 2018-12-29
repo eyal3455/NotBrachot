@@ -3,19 +3,24 @@ package NodesCommunicationLayer.ZooKeeper;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
+import java.util.concurrent.CountDownLatch;
 
-public class DistributedStateMachine {
 
-    String root = "/ReplicatedSM";
+public class DistributedStateMachine implements Watcher{
+
+    String root = "/ReplicatedSM_test";
     ZooKeeper _zooKeeper;
     String _myName;
     Object _lock = new Object();
+    Object _setDataLock = new Object();
 
     State _state;
+    CountDownLatch _sendFinishedEvent;
 
     public DistributedStateMachine(ZooKeeper zooKeeper, String name) throws KeeperException, InterruptedException {
         _zooKeeper = zooKeeper;
         _myName = name;
+        _state = new State();
 
         RegisterToZnode();
     }
@@ -23,20 +28,19 @@ public class DistributedStateMachine {
     public boolean ChangeState(StateMachineState newState) {
         State currentState = GetVersionAndState();
         if (currentState.getState() == StateMachineState.Idle || newState == StateMachineState.Idle) {
-            return SetData(newState.toString().getBytes(), currentState.getVersion());
+            return SetData(ConvertEnumToByte(newState), currentState.getVersion());
         }
         return false;
     }
 
     private void RegisterToZnode() throws KeeperException, InterruptedException {
         if (_zooKeeper.exists(root, false) == null) {
-            _zooKeeper.create(root, StateMachineState.Idle.toString().getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            _zooKeeper.create(root, ConvertEnumToByte(StateMachineState.Idle), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         }
-        _zooKeeper.getData(root, false, this::processResult, null);
 
         Stat stat = new Stat();
-        byte[] data = _zooKeeper.getData(root, false, stat);
-        UpdateVersionAndState(stat.getVersion(), StateMachineState.valueOf(new String(data)));
+        byte[] data = _zooKeeper.getData(root, this, stat);
+        UpdateVersionAndState(stat.getVersion(), ConvertByteToEnum(data));
     }
 
     private void UpdateVersionAndState(int version, StateMachineState state) {
@@ -58,19 +62,66 @@ public class DistributedStateMachine {
     }
 
     private boolean SetData(byte[] data, int version) {
-        try {
-            _zooKeeper.setData(root, data, version);
-            return true;
-        } catch (KeeperException e) {
-            return false;
-        } catch (InterruptedException e) {
-            return false;
+        synchronized (_setDataLock) {
+            try {
+                _sendFinishedEvent = new CountDownLatch(1);
+                _zooKeeper.setData(root, data, version);
+                _sendFinishedEvent.await();
+                return true;
+            } catch (KeeperException e) {
+                return false;
+            } catch (InterruptedException e) {
+                return false;
+            }
         }
     }
 
-    private void processResult(int rc, String path, Object ctx, byte[] data, Stat stat) {
+    byte[] ConvertEnumToByte(StateMachineState state) {
+        byte returnValue = 0;
+        switch (state) {
+            case Idle:
+                returnValue = 0;
+                break;
+            case Transmitting:
+                returnValue = 1;
+                break;
+            case Unknown:
+                returnValue = 2;
+                break;
+            default:
+                System.out.println("Not implemented!");
+        }
+        return new byte[]{returnValue};
+    }
 
-        UpdateVersionAndState(stat.getVersion(), StateMachineState.valueOf(new String(data)));
-        _zooKeeper.getData(root, false, this::processResult, null);
+    StateMachineState ConvertByteToEnum(byte[] data) {
+        if (data == null || data.length != 1) {
+            return StateMachineState.Unknown;
+        }
+        byte en = data[0];
+        if (en == 0)
+            return StateMachineState.Idle;
+        if (en == 1)
+            return StateMachineState.Transmitting;
+        return StateMachineState.Unknown;
+    }
+
+    @Override
+    public void process(WatchedEvent watchedEvent) {
+        synchronized (_lock) {
+            try {
+                _zooKeeper.getData(root, this, null);
+                Stat stat = new Stat();
+                byte[] data = new byte[0];
+                data = _zooKeeper.getData(root, false, stat);
+                System.out.println("Change SM state! " + ConvertByteToEnum(data).toString());
+                UpdateVersionAndState(stat.getVersion(), ConvertByteToEnum(data));
+                _sendFinishedEvent.countDown();
+            } catch (KeeperException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

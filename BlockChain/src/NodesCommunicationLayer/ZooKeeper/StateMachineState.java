@@ -1,6 +1,8 @@
 package NodesCommunicationLayer.ZooKeeper;
 
-public enum StateMachineState {
+import java.io.Serializable;
+
+public enum StateMachineState implements Serializable {
     Idle,
     Transmitting,
     Unknown
