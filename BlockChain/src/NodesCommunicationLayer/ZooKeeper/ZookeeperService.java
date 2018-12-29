@@ -29,12 +29,24 @@ public class ZookeeperService {
         _stateMachine = new DistributedStateMachine(_zookeeper, name);
     }
 
-    public boolean StartTransmitting() {
-        return _stateMachine.ChangeState(StateMachineState.Transmitting);
+    public State GetState() {
+        return _stateMachine.GetVersionAndState();
+    }
+
+    public boolean StartTransmitting(State state) {
+        return _stateMachine.ChangeState(StateMachineState.Transmitting, state);
     }
 
     public boolean StopTransmitting() {
         return _stateMachine.ChangeState(StateMachineState.Idle);
+    }
+
+    public boolean Commit() {
+        return _stateMachine.ChangeState(StateMachineState.Commit);
+    }
+
+    public boolean Abort() {
+        return _stateMachine.ChangeState(StateMachineState.Abort);
     }
 
     public String GetLeader() throws KeeperException, InterruptedException {

@@ -25,9 +25,17 @@ public class DistributedStateMachine implements Watcher{
         RegisterToZnode();
     }
 
+    public boolean ChangeState(StateMachineState newState, State state) {
+        if (newState == state.getState()) {
+            return false;
+        }
+        return SetData(ConvertEnumToByte(newState), state.getVersion());
+    }
+
     public boolean ChangeState(StateMachineState newState) {
+
         State currentState = GetVersionAndState();
-        if (currentState.getState() == StateMachineState.Idle || newState == StateMachineState.Idle) {
+        if (currentState.getState() != newState) {
             return SetData(ConvertEnumToByte(newState), currentState.getVersion());
         }
         return false;
@@ -52,7 +60,7 @@ public class DistributedStateMachine implements Watcher{
         }
     }
 
-    private State GetVersionAndState() {
+    public State GetVersionAndState() {
         synchronized (_lock) {
             State returnValue = new State();
             returnValue.setState(_state.getState());
@@ -85,8 +93,14 @@ public class DistributedStateMachine implements Watcher{
             case Transmitting:
                 returnValue = 1;
                 break;
-            case Unknown:
+            case Commit:
                 returnValue = 2;
+                break;
+            case Abort:
+                returnValue = 3;
+                break;
+            case Unknown:
+                returnValue = 4;
                 break;
             default:
                 System.out.println("Not implemented!");
@@ -103,6 +117,10 @@ public class DistributedStateMachine implements Watcher{
             return StateMachineState.Idle;
         if (en == 1)
             return StateMachineState.Transmitting;
+        if (en == 2)
+            return StateMachineState.Commit;
+        if (en == 3)
+            return StateMachineState.Abort;
         return StateMachineState.Unknown;
     }
 

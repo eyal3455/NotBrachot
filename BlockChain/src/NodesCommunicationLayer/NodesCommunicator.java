@@ -1,5 +1,7 @@
 package NodesCommunicationLayer;
 
+import NodesCommunicationLayer.ZooKeeper.State;
+import NodesCommunicationLayer.ZooKeeper.StateMachineState;
 import NodesCommunicationLayer.ZooKeeper.ZookeeperService;
 import org.apache.zookeeper.KeeperException;
 
@@ -15,6 +17,23 @@ public class NodesCommunicator {
     }
 
     public boolean CommitBlock() {
-        return false;
+
+        State state = _zooKeeperService.GetState();
+        if (state.getState() == StateMachineState.Transmitting) {
+            return false;
+        }
+
+        //TODO: calculate block to add
+
+        boolean isAuthorizedToBCast = _zooKeeperService.StartTransmitting(state);   // to ensure the block is valid.
+        if (!isAuthorizedToBCast) {
+            return false;
+        }
+
+        //TODO: Broadcast here.
+
+        //TODO: _zooKeeperService.Commit()/Abort();
+        _zooKeeperService.StopTransmitting();
+        return true;
     }
 }

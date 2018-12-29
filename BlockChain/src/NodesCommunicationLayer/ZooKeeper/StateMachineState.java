@@ -5,5 +5,7 @@ import java.io.Serializable;
 public enum StateMachineState implements Serializable {
     Idle,
     Transmitting,
+    Commit,
+    Abort,
     Unknown
 }
