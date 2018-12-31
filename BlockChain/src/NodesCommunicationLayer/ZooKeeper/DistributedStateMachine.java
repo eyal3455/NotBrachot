@@ -3,12 +3,13 @@ package NodesCommunicationLayer.ZooKeeper;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
+import java.io.Console;
 import java.util.concurrent.CountDownLatch;
 
 
 public class DistributedStateMachine implements Watcher{
 
-    String root = "/ReplicatedSM_test";
+    String root = "/ReplicatedSM";
     ZooKeeper _zooKeeper;
     String _myName;
     Object _lock = new Object();
@@ -54,6 +55,7 @@ public class DistributedStateMachine implements Watcher{
     private void UpdateVersionAndState(int version, StateMachineState state) {
         synchronized (_lock) {
             if (version > _state.getVersion()) {
+                System.out.println("SM state: " + state.toString());
                 _state.setVersion(version);
                 _state.setState(state);
             }
@@ -132,7 +134,6 @@ public class DistributedStateMachine implements Watcher{
                 Stat stat = new Stat();
                 byte[] data = new byte[0];
                 data = _zooKeeper.getData(root, false, stat);
-                System.out.println("Change SM state! " + ConvertByteToEnum(data).toString());
                 UpdateVersionAndState(stat.getVersion(), ConvertByteToEnum(data));
                 _sendFinishedEvent.countDown();
             } catch (KeeperException e) {

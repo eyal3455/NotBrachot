@@ -29,11 +29,10 @@ public class ZookeeperService {
         _stateMachine = new DistributedStateMachine(_zookeeper, name);
     }
 
-    public State GetState() {
-        return _stateMachine.GetVersionAndState();
-    }
+    public State GetState() { return _stateMachine.GetVersionAndState(); }
 
     public boolean StartTransmitting(State state) {
+        System.out.println("Requesting transmission permission.");
         return _stateMachine.ChangeState(StateMachineState.Transmitting, state);
     }
 
@@ -42,10 +41,12 @@ public class ZookeeperService {
     }
 
     public boolean Commit() {
+        System.out.println("Committing.");
         return _stateMachine.ChangeState(StateMachineState.Commit);
     }
 
     public boolean Abort() {
+        System.out.println("Aborting.");
         return _stateMachine.ChangeState(StateMachineState.Abort);
     }
 

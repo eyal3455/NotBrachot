@@ -1,3 +1,5 @@
+import Model.Block;
+import NodesCommunicationLayer.NodesCommunicator;
 import NodesCommunicationLayer.ZooKeeper.ZookeeperService;
 import org.apache.zookeeper.KeeperException;
 
@@ -11,10 +13,14 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-        System.out.println("Hello World!");
-        //CreateThread("second").start();
-        //sleep(5000);
-        CreateAndConnect("EYAL_PC:8089");
+        System.out.println("Started!");
+
+        NodesCommunicator nc = new NodesCommunicator("localhost", "EYAL_PC:8089");
+        nc.StartCalculating();
+        // calculating block here...
+        nc.CommitBlock(new Block());
+
+        System.out.println("Finished!");
     }
 
     private static Thread CreateThread(String addr) {
@@ -32,7 +38,7 @@ public class Main {
     }
 
     private static void CreateAndConnect(String addr) throws IOException, InterruptedException, KeeperException {
-        ZookeeperService zkc = new ZookeeperService();
+       /* ZookeeperService zkc = new ZookeeperService();
         zkc.connect("localhost", AMOUNT_OF_SERVERS, addr);
 
         zkc.StopTransmitting();
@@ -45,6 +51,6 @@ public class Main {
         System.out.println("3. Transmitting (T): " + isStartTransmitting);
         zkc.StopTransmitting();
 
-        System.out.println("Finished!");
+        System.out.println("Finished!");*/
     }
 }
